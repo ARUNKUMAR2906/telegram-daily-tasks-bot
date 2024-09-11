@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 import TelegramBot from "node-telegram-bot-api";
 import { MongoClient } from "mongodb";
 import moment from "moment-timezone"; // Import Moment.js
+import express from "express";
+import bodyParser from "body-parser";
 
 // Load environment variables
 dotenv.config();
@@ -9,12 +11,31 @@ dotenv.config();
 // Access the token and MongoDB URI from .env
 const token = process.env.MyBot_API;
 const mongoUrl = process.env.MONGODB_URI;
+const port = process.env.PORT || 3000; // Set port from environment variable or default to 3000
+const webhookUrl =
+  process.env.WEBHOOK_URL ||
+  `https://your-app-name.onrender.com/webhook/${token}`; // Ensure this URL is correctly set
 
-// Initialize the bot
-const bot = new TelegramBot(token, { polling: true });
+// Initialize the bot without polling
+const bot = new TelegramBot(token);
 
 // Initialize MongoDB client
 const client = new MongoClient(mongoUrl);
+
+// Set up Express
+const app = express();
+app.use(bodyParser.json());
+
+// Webhook route
+app.post(`/webhook/${token}`, async (req, res) => {
+  try {
+    await bot.processUpdate(req.body);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error processing webhook update:", error);
+    res.sendStatus(500);
+  }
+});
 
 (async () => {
   try {
@@ -25,6 +46,17 @@ const client = new MongoClient(mongoUrl);
     const db = client.db("telegram_bot"); // Database name
     const tasksCollection = db.collection("tasks"); // Tasks collection
     const remindersCollection = db.collection("reminders"); // Reminders collection
+
+    // Set up webhook
+    await bot.setWebHook(`${webhookUrl}/webhook/${token}`);
+    console.log(`Webhook set up at ${webhookUrl}/webhook/${token}`);
+
+    // Start the Express server
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+
+    // Add your existing commands and logic here...
 
     // Start command
     bot.onText(/\/start/, async (msg) => {
@@ -205,7 +237,8 @@ bot.onText(/\/(.*)/, async (msg) => {
     "/start",
     "/addtask",
     "/listtasks",
-    "/deletetask", // Added deletetask command
+    "/deletetask",
+    "/deletealltasks",
     "/remind",
     "/listreminders",
   ];
