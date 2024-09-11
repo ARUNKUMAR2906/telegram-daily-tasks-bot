@@ -9,12 +9,10 @@ import bodyParser from "body-parser";
 dotenv.config();
 
 // Access the token and MongoDB URI from .env
-const token = process.env.MyBot_API;
+const token = process.env.MYBOT_API;
 const mongoUrl = process.env.MONGODB_URI;
 const port = process.env.PORT || 3000; // Set port from environment variable or default to 3000
-const webhookUrl =
-  process.env.WEBHOOK_URL ||
-  `https://telegram-daily-tasks-bot.onrender.com/webhook/${token}`; // Ensure this URL is correctly set
+const webhookUrl = process.env.WEBHOOK_URL; // Ensure this URL is correctly set
 
 // Initialize the bot without polling
 const bot = new TelegramBot(token);
