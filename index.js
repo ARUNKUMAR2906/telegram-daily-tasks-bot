@@ -14,7 +14,7 @@ const mongoUrl = process.env.MONGODB_URI;
 const port = process.env.PORT || 3000; // Set port from environment variable or default to 3000
 const webhookUrl =
   process.env.WEBHOOK_URL ||
-  `https://your-app-name.onrender.com/webhook/${token}`; // Ensure this URL is correctly set
+  `https://telegram-daily-tasks-bot.onrender.com/webhook/${token}`; // Ensure this URL is correctly set
 
 // Initialize the bot without polling
 const bot = new TelegramBot(token);
